@@ -1,0 +1,2 @@
+#to get details of installed packages
+pip freeze requirements.txt
