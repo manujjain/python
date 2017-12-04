@@ -1,0 +1,1082 @@
+#======================================
+#Imports 
+import discord, asyncio, youtube_dl, requests, json, random, urllib, simplejson
+import os, dataset, time, datetime, re, urllib.request, urllib.error, sys, shutil
+import glob
+import threading
+print('Importing Assets')
+#======================================
+#Load Opus Lib
+client = discord.Client()
+# if not discord.opus.is_loaded():
+#     discord.opus.load_opus('opus')
+#     #discord.opus.encoder_options(48000, 2)
+# print('Loading Opus')
+    
+#======================================
+#On Startup
+print('Connecting to Discord')
+@client.event
+async def on_ready():
+    print('------')
+    print('Logged in as')
+    print(client.user.name)
+    print(client.user.id)
+    print('Ready.')
+    print('------')
+    thread = 'wlt'
+    thread = threading.Thread(target=webhooklisten)
+    thread.start()
+    print("Started")
+#======================================
+#Variables
+print('loading Variables')
+runtime = {'servers':{}}
+DEVELOPER_KEY = "AIzaSyDDJNVFKntVMSdOTByIzZZH6jfGOA4Hiig"
+@client.event
+async def on_message(message):
+    global daystart
+    global client
+    global w
+    runtime['lastmessage'] = message
+
+    # try:
+    if str(message.server.id) not in runtime['servers']:
+        print('--This is not in a server, aka second client.event calling--')
+        runtime['servers'][str(message.server.id)] = {'prefix':'~','connected':False, 'queue':[], 'admins':['97555134778712064', '158057056606093313', '92747043885314048']}
+        print(str(runtime['servers'][str(message.server.id)]['connected']))
+        print(str(runtime['servers'][str(message.server.id)]))
+    
+    if message.content.startswith('!sep'): #to manually send a on-entry message incase the bot was down
+        await client.delete_message(message)
+        name = str(message.content).split(' ', 1)[1]
+        print(name)
+        member = discord.utils.get(message.server.members, name=str(name))
+        print(name)
+        print(member)
+        client.loop.create_task(on_member_join(member))
+    
+        
+        
+    if message.content.startswith('!'):
+        print('At ('+str(time.strftime("%I:%M:%S"))+') ['+str(message.server)+'][#'+str(message.channel)+'] '+str(message.author)+': '+str(message.content))
+    
+    #To delete messages in dm
+    # if message.content.startswith('!dtcm'):
+    #     print('true')
+    #     async for messages in client.logs_from(message.channel, limit=50):
+    #         print(messages)
+    #         if str(messages.author.id) == '295009083386494986':
+    #             await client.delete_message(messages)
+    #         else:
+    #             pass
+    # else:
+    #     pass
+    
+   
+
+def checkk(reaction, user):
+    e = str(reaction.emoji)
+    return e.startswith(('🇾', '🇳'))
+    
+@client.event   
+async def on_member_join(member):
+    discordianid, updatesid, giveawaysid, musicalid, showtimeid, engageid, exhibitionid, advertisementsid = '', '', '', '', '', '', '', '',
+    # if str(member.server.id) == "277338839780163585" and str(member.id) == '158080805124440064':
+    if str(member.server.id) == "277338839780163585" and member.bot != True:
+        try:
+            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+        except:
+            pass
+        runtime['servers'][str(member.id)] = {'q1-1': False, 'q1-2': False, 'q1-3': False, 'q1-4': False, 'q1-5': False, 'q1-6': False, 'q1-7': False, 'q1-8': False, 'q1-9': False, 'q1-c': False }
+        # for server in client.servers:
+        #     if str(server.id) == str(member.server.id):
+        #         print('adding discord ids')
+        #         for role in server.roles:
+        #             rolee = str(role).lower()
+        #             print(role)
+        #             if str(rolee) == 'discordian':
+        #                 discordianrole = str(role)
+        #                 discordianid = str(role.id)
+        #             elif str(rolee) == 'updates':
+        #                 updatesid = str(role.id)
+        #             elif str(rolee) == 'giveaways':
+        #                 giveawaysid = str(role.id)
+        #             elif str(rolee) == 'musical':
+        #                 musicalid = str(role.id)
+        #             elif str(rolee) == 'showtime':
+        #                 showtimeid = str(role.id)
+        #             elif str(rolee) == 'engage':
+        #                 engageid = str(role.id)
+        #             elif str(rolee) == 'exhibition':
+        #                 exhibitionid = str(role.id)
+        #             elif str(rolee) == 'advertisements':
+        #                 advertisementsid = str(role.id)
+        #             else:
+        #                 pass
+        #-------------- Welcome Mention --------------
+        for server in client.servers:
+            if str(server.id) == '277338839780163585':
+                for channel in server.channels:
+                    if str(channel.id) == '347941901179027457':
+                        runtime['servers'][str(member.id)]['welcomemessage'] = await client.send_message(
+                            channel,
+                            "Hey <@&359070686649647104>, <@{}> joined our quest to #1 service on <:Discord:381296688813441025>Discord! Give them a warm welcome~\nPlease be reminded to check your Private Messages to configure your account, so I don't kick you out. >:D".format(str(member.id))
+                            )
+                    else:
+                        pass
+            else:
+                pass
+        
+        #-------------- TOS Question#0 ---------------
+        em = discord.Embed(title="Privacy Policy", description="Discord Directory, 'we', 'the service', may access your Discord Username, Email and avatar to provide data synchronization, extended features between the Discordapp API and Discord Directory API, along with accurate and reliable results.\n \nYour data will not:\n● be submitted to third party services that are not controlled, or managed by the Discordapp or Discord Directory, unless warranted by law.\n● be used without your consent.\n \nAcknowledging this notice, means you are in agreeement to the use of your data and you will be redirected to connecting to 'us', 'the service'. We will update this without prior notice, if necessary!\n \nIf you have concerns, please forward them to any member of the Marketing Team.\n \n🇾 - Yes, I acknowledge.\n🇳 - No, I don't agree to this.", colour=0xFFA658)
+        runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇾'))
+        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇳'))
+        await asyncio.sleep(.5)
+        res = await client.wait_for_reaction(['🇾', '🇳'], message=runtime['servers'][str(member.id)]['question'], check=checkk, timeout=2400)
+        print(res)
+        if res != None:
+            emoji = '{0.reaction.emoji}'.format(res)
+        else:
+            emoji = None
+            pass
+        print(emoji)
+        if emoji == '🇾':
+            try:
+                await client.delete_message(runtime['servers'][str(member.id)]['question'])
+            except:
+                pass
+            
+            em = discord.Embed(title="<:DiscordDirectory:346756112621502465> Welcome to Discord Directory!", description="**__What we do?__**\n \nWe list servers, bots, and provide additional solutions for people that use the Discord app.\n \nWe would like to ask you **four** questions to dramatically improve your server experience. Can we, <@{}>?".format(member.id), colour=0xFFA658)
+            # em.add_field(name='Question 1:', value='')
+            # em.set_thumbnail(url='https://cdn.discordapp.com/attachments/345044851483607061/351877538513158145/Discord_Directory.png')
+            em.set_image(url='https://cdn.discordapp.com/attachments/353002535155400705/360101482969956354/Discord_Directory.png')
+            runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+            await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇾'))
+            await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇳'))
+            await asyncio.sleep(1)
+            res = await client.wait_for_reaction(['🇾', '🇳'], message=runtime['servers'][str(member.id)]['question'], check=checkk, timeout=1800)
+            print(res)
+            if res != None:
+                emoji = '{0.reaction.emoji}'.format(res)
+            else:
+                emoji = None
+                pass
+            print(emoji)
+            if emoji == '🇾':
+                async def emoteloop(member):
+                    await asyncio.sleep(.2)
+                    # await client.clear_reactions(runtime['servers'][str(member.id)]['question'])
+                    try:
+                        await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                    except:
+                        pass
+                    r = ''
+                    
+                    if runtime['servers'][str(member.id)]['q1-1'] == True:
+                        a = ' ✔'
+                    else:
+                        a = ''
+                    if runtime['servers'][str(member.id)]['q1-2'] == True:
+                        b = ' ✔'
+                    else:
+                        b = ''
+                    if runtime['servers'][str(member.id)]['q1-3'] == True:
+                        c = ' ✔'
+                    else:
+                        c = ''
+                    if runtime['servers'][str(member.id)]['q1-4'] == True:
+                        d = ' ✔'
+                    else:
+                        d = ''
+                    if runtime['servers'][str(member.id)]['q1-5'] == True:
+                        e = ' ✔'
+                    else:
+                        e = ''
+                    if runtime['servers'][str(member.id)]['q1-6'] == True:
+                        f = ' ✔'
+                    else:
+                        f = ''
+                    if runtime['servers'][str(member.id)]['q1-7'] == True:
+                        g = ' ✔'
+                    else:
+                        g = ''
+                    if runtime['servers'][str(member.id)]['q1-8'] == True:
+                        h = ' ✔'
+                    else:
+                        h = ''
+                    em = discord.Embed(title="**Awesome! Here's question #1:**", description="**__What server notifications would you like to have?__**\n \n🇦| Major website and server updates{}\n🇧| Massive giveaways{}\n🇨| Exclusive Musical events{}\n🇩| Showtime Streaming events{}\n🇪| Rewarding Gaming events{}\n🇫| Promotional Art events{}\n🇬| Advertisements{}\n🇭| Gimme ***all*** the roles!\n🇮| None, I wanna be a lurker".format(a, b, c, d, e, f, g, h), colour=0xFFA658)
+                    em.set_footer(text="Use ☑ to proceed to the next question")
+                    runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+                    
+                    def chk(reaction, user):
+                        e = str(reaction.emoji)
+                        return e.startswith(('🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','☑'))
+                        
+                    # res = await client.wait_for_reaction(message=msg, check=chk)
+                    # '🇦','🇧','🇨','🇪','🇫','🇬','🇭','☑'
+                    if runtime['servers'][str(member.id)]['q1-1'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇦'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-1'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-2'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇧'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-2'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-3'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇨'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-3'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-4'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇩'))
+                        # p += 
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-5'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇪'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-4'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-6'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇫'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-5'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-7'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇬'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-6'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-8'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇭'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-6'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-9'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇮'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-7'] = True
+                    else:
+                        pass
+                    if runtime['servers'][str(member.id)]['q1-c'] == False:
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('☑'))
+                        # p += 
+                        # runtime['servers'][str(member.id)]['q1-8'] = True
+                    else:
+                        pass
+                    await asyncio.sleep(1)
+                    res = await client.wait_for_reaction(message=runtime['servers'][str(member.id)]['question'], check=chk)
+                    print(res)
+                    ress = '{0.reaction.emoji}'.format(res)
+                    print(ress)
+                    if runtime['servers'][str(member.id)]['q1-1'] == False and ress == '🇦':
+                        runtime['servers'][str(member.id)]['q1-1'] = True
+                        # await client.send_message(member, 'You now have q1-1 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Updates")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(updatesid)
+                        # updates
+                        print('You now have q1-1 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-2'] == False and ress == '🇧':
+                        runtime['servers'][str(member.id)]['q1-2'] = True
+                        # await client.send_message(member, 'You now have q1-2 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Giveaways")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(giveawaysid)
+                        # giveaways
+                        print('You now have q1-2 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-3'] == False and ress == '🇨':
+                        runtime['servers'][str(member.id)]['q1-3'] = True
+                        # await client.send_message(member, 'You now have q1-3 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Musical")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(musicalid)
+                        # musical
+                        print('You now have q1-3 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-4'] == False and ress == '🇩':
+                        runtime['servers'][str(member.id)]['q1-4'] = True
+                        # await client.send_message(member, 'You now have q1-4 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Showtime")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(showtimeid)
+                        # showtime
+                        print('You now have q1-4 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-5'] == False and ress == '🇪':
+                        runtime['servers'][str(member.id)]['q1-5'] = True
+                        # await client.send_message(member, 'You now have q1-5 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Engage")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(engageid)
+                        # engage
+                        print('You now have q1-5 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-6'] == False and ress == '🇫':
+                        runtime['servers'][str(member.id)]['q1-6'] = True
+                        # await client.send_message(member, 'You now have q1-6 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Exhibition")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(exhibitionid)
+                        # exhibition
+                        print('You now have q1-6 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-7'] == False and ress == '🇬':
+                        runtime['servers'][str(member.id)]['q1-7'] = True
+                        # await client.send_message(member, 'You now have q1-7 role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Advertisements")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(advertisementsid)
+                        # adverts 🇮
+                        print('You now have q1-7 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-8'] == False and ress == '🇭':
+                        runtime['servers'][str(member.id)]['q1-8'] = True
+                        # await client.send_message(member, 'You now have q1-8 role')
+                        # r = str(discordianid)
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                
+                                role1 = discord.utils.get(server.roles, name="Discordians")
+                                role2 = discord.utils.get(server.roles, name="Updates")
+                                role3 = discord.utils.get(server.roles, name="Giveaways")
+                                role4 = discord.utils.get(server.roles, name="Musical")
+                                role5 = discord.utils.get(server.roles, name="Showtime")
+                                role6 = discord.utils.get(server.roles, name="Engage")
+                                role7 = discord.utils.get(server.roles, name="Exhibition")
+                                role8 = discord.utils.get(server.roles, name="Advertisements")
+                                # rolelist = str(role1) + ', ' + str(role2) + ', ' + str(role3) + ', ' + str(role4) + ', ' + str(role5) + ', ' + str(role6) + ', ' + str(role7) + ', ' + str(role8) + '\n((Basically all of the roles))'
+                                rolelist = "All assignable roles from question #1"
+                                
+                                await client.add_roles(member, role1, role2, role3, role4, role5, role6, role7, role8)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added {}'.format(str(member), str(rolelist)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # All roles
+                    elif runtime['servers'][str(member.id)]['q1-9'] == False and ress == '🇮':
+                        runtime['servers'][str(member.id)]['q1-9'] = True
+                        # await client.send_message(member, 'You now have q1-8 role')
+                        # r = str(discordianid)
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Discordians")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # client.add_roles(member, discordianrole)
+                        # since this is the lurker role, it skips adding any more roles.
+                        print('You now have q1-8 role')
+                        
+                    elif runtime['servers'][str(member.id)]['q1-c'] == False and ress == '☑':
+                        runtime['servers'][str(member.id)]['q1-c'] = True
+                        # await client.send_message(member, 'You now have q1-c role')
+                        for server in client.servers:
+                            if str(server.id) == str(member.server.id):
+                                role = discord.utils.get(server.roles, name="Discordians")
+                                print(role)
+                                await client.add_roles(member, role)
+                                for channel in server.channels:
+                                    if str(channel.id) == '359913325024378880':
+                                        em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                        await client.send_message(channel, embed=em)
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        # r += ', ' + str(discordianid)
+                        # since this is the skip emote, it will assign a role telling you they complete the interaction.
+                        print('You now have q1-c role')
+                        
+                    else:
+                        e = await client.send_message(member, 'Nobody likes a smart-ass.')
+                        await asyncio.sleep(1)
+                        await client.delete_message(e)
+                        client.loop.create_task(emoteloop(member))
+                    
+                    if runtime['servers'][str(member.id)]['q1-c'] == True or runtime['servers'][str(member.id)]['q1-8'] == True or runtime['servers'][str(member.id)]['q1-9'] == True:
+                        if runtime['servers'][str(member.id)]['q1-9'] == True:
+                            runtime['servers'][str(member.id)]['q1-1'], runtime['servers'][str(member.id)]['q1-2'], runtime['servers'][str(member.id)]['q1-3'], runtime['servers'][str(member.id)]['q1-4'], runtime['servers'][str(member.id)]['q1-5'], runtime['servers'][str(member.id)]['q1-6'], runtime['servers'][str(member.id)]['q1-7'] = False, False, False, False, False, False, False
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="Discordians")
+                                    print(role)
+                                    await client.replace_roles(member, role)
+                                    break
+                                else:
+                                    pass
+                        else:
+                            pass
+                        print(str(r))
+                        # await client.add_roles(member, r)
+                        # if runtime['servers'][str(member.id)]['q1-1'] == False and runtime['servers'][str(member.id)]['q1-2'] == False and runtime['servers'][str(member.id)]['q1-3'] == False and runtime['servers'][str(member.id)]['q1-4'] == False and runtime['servers'][str(member.id)]['q1-5'] == False and runtime['servers'][str(member.id)]['q1-6'] == False and runtime['servers'][str(member.id)]['q1-7'] == False and runtime['servers'][str(member.id)]['q1-8'] == False:
+                        #     await client.add_roles(member, discordianid)
+                        # else:
+                        #     pass
+                        for server in client.servers:
+                            if str(server.id) == '92827879448002560':
+                                for members in server.members:
+                                    if str(member) == str(members) or str(member.id) == str(members.id):
+                                        for server in client.servers:
+                                            if str(server.id) == '277338839780163585':
+                                                
+                                                
+                                                role = discord.utils.get(server.roles, name="FinalOrder Guests")
+                                                print(role)
+                                                try:
+                                                    await client.add_roles(member, role)
+                                                    for channel in server.channels:
+                                                        if str(channel.id) == '359913325024378880':
+                                                            em = discord.Embed(title='{} was given {} for being in FinalOrder'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                                            await client.send_message(channel, embed=em)
+                                                            break
+                                                        else:
+                                                            pass
+                                                except:
+                                                    for channel in server.channels:
+                                                        if str(channel.id) == '359913325024378880':
+                                                            em = discord.Embed(title='I was unable to give {} the {} role'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                                            await client.send_message(channel, embed=em)
+                                                            break
+                                                        else:
+                                                            pass
+                                                    pass
+                                                break
+                                            else:
+                                                pass
+                                        break
+                                    else:
+                                        pass
+                                break
+                            else:
+                                pass
+                        await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                        em = discord.Embed(title='Question #2:', description="**__Would you like access to the server and bot channels?__**\n \n🇾| Gain access to bot and server invite links\n🇳| Won't be seen", colour=0xFFA658)
+                        runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+                        await asyncio.sleep(0.2)
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇾'))
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇳'))
+                        await asyncio.sleep(.5)
+                        res = await client.wait_for_reaction(['🇾', '🇳'], message=runtime['servers'][str(member.id)]['question'], check=checkk)
+                        print(res)
+                        emoji = '{0.reaction.emoji}'.format(res)
+                        print(emoji)
+                        if emoji == '🇾':
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            # set role for server & bot channels
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="Discord Adventurers")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                            pass
+                        # elif emoji == '🇳':
+                            
+                        else:
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            # set no role
+                            pass
+                        em = discord.Embed(title="Here's, question #3:", description="**__To make notifications more effective, what timezone are you in?__**\n \n**__Select the closest timezone to you__**\n \n🇦| EST (Eastern Standard Time) \n🇧| PST (Pacific Standard Time) \n🇨| CET (Central European time) \n🇩| AWT (Australian Western Time)", colour=0xFFA658)
+                        runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+                        await asyncio.sleep(0.2)
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇦'))
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇧'))
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇨'))
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇩'))
+                        await asyncio.sleep(.5)
+                        res = await client.wait_for_reaction(['🇦', '🇧', '🇨', '🇩'], message=runtime['servers'][str(member.id)]['question'], check=chk)
+                        print(res)
+                        emoji = '{0.reaction.emoji}'.format(res)
+                        print(emoji)
+                        if emoji == '🇦':
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="EST")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                        elif emoji == '🇧':
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="PST")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                        elif emoji == '🇨':
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="CET")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                        elif emoji == '🇩':
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="AWT")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                            
+                        else:
+                            pass
+                        # for server in client.servers:
+                        #     if str(server.id) == str(member.server.id):
+                        #         for channel in server.channels:
+                        #             if str(channel.id) == '347941901179027457':
+                                    
+                        #                 # await client.send_message(channel, "Everyone give a warm welcome to <@{}>".format(str(member.id)))
+                        #                 break
+                        #             else:
+                        #                 pass
+                        try:
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                        except:
+                            pass
+                        em = discord.Embed(title='And finally, Question #4:', description="**__Would you like to hire talented users on Discord?__**\n \n🇾| Yes (You will gain access to beautiful portfolios embedded in channels)\n🇳| No (Wont be seen)", colour=0xFFA658)
+                        runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+                        await asyncio.sleep(0.2)
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇾'))
+                        await client.add_reaction(runtime['servers'][str(member.id)]['question'], str('🇳'))
+                        await asyncio.sleep(.5)
+                        res = await client.wait_for_reaction(['🇾', '🇳'], message=runtime['servers'][str(member.id)]['question'], check=checkk)
+                        print(res)
+                        emoji = '{0.reaction.emoji}'.format(res)
+                        print(emoji)
+                        
+                        await client.delete_message(runtime['servers'][str(member.id)]['welcomemessage'])
+                        
+                        if emoji == '🇾':
+    
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            # set role for server & bot channels
+                            for server in client.servers:
+                                if str(server.id) == str(member.server.id):
+                                    role = discord.utils.get(server.roles, name="Commissions")
+                                    print(role)
+                                    await client.add_roles(member, role)
+                                    for channel in server.channels:
+                                        if str(channel.id) == '359913325024378880':
+                                            em = discord.Embed(title='{} has added role {}'.format(str(member), str(role)), description=None, colour=0x2edd06)
+                                            await client.send_message(channel, embed=em)
+                                            break
+                                        else:
+                                            pass
+                                    break
+                                else:
+                                    pass
+                            pass
+                        else:
+                            await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                            pass
+                        await asyncio.sleep(2)
+                        em = discord.Embed(title='Welcome to Discord Directory <:DiscordDirectory:346756112621502465>', description="**Thanks for your time!**\n \nOur members will be happy to give you a warm welcome, just say Hi~", colour=0xFFA658)
+                        runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+                        await asyncio.sleep(10)
+                        await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                    else:
+                        await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                        client.loop.create_task(emoteloop(member))
+                
+                client.loop.create_task(emoteloop(member))
+                    
+                
+            elif emoji == '🇳':
+                try:
+                    await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                    e = await client.send_message(member, 'Thanks for your interest.')
+                    for servers in client.servers:
+                        if str(servers.id) == '277338839780163585':
+                            await client.kick(member)
+                            for channel in servers.channels:
+                                if str(channel.id) == '359913325024378880':
+                                    em = discord.Embed(title='I have kicked {} for declining first question. '.format(member), description=None, colour=0xff0000)
+                                    await client.send_message(channel, embed=em)
+                                    break
+                                else:
+                                    pass
+                            break
+                        else:
+                            pass
+                    await asyncio.sleep(2)
+                    await client.delete_message(e)
+                except:
+                    for servers in client.servers:
+                        if str(servers.id) == '277338839780163585':
+                            for channel in servers.channels:
+                                if str(channel.id) == '359913325024378880':
+                                    em = discord.Embed(title='I was unable to kick {} for declining first question. '.format(member), description=None, colour=0xff0000)
+                                    await client.send_message(channel, embed=em)
+                                    break
+                                else:
+                                    pass
+                                
+                        else:
+                            pass
+                    
+            else:
+                try:
+                    await client.delete_message(runtime['servers'][str(member.id)]['question'])
+                    e = await client.send_message(member, 'Thanks for your interest.')
+                    for servers in client.servers:
+                        if str(servers.id) == '277338839780163585':
+                            await client.kick(member)
+                            for channel in servers.channels:
+                                if str(channel.id) == '359913325024378880':
+                                    em = discord.Embed(title='I have kicked {} for idling in the entrypoint. '.format(member), description=None, colour=0xff0000)
+                                    await client.send_message(channel, embed=em)
+                                    break
+                                else:
+                                    pass
+                            break
+                        else:
+                            pass
+                except:
+                    for servers in client.servers:
+                        if str(servers.id) == '277338839780163585':
+                            for channel in servers.channels:
+                                if str(channel.id) == '359913325024378880':
+                                    em = discord.Embed(title='I was unable to kick {} for idling in the entrypoint. '.format(member), description=None, colour=0xff0000)
+                                    await client.send_message(channel, embed=em)
+                                    break
+                                else:
+                                    pass
+                                
+                        else:
+                            pass
+                    
+                await asyncio.sleep(2)
+                await client.delete_message(e)
+                        
+        elif emoji == '🇳':
+            try:
+                await client.delete_message(runtime['servers'][str(member.id)]['question'])
+            except:
+                pass
+            await asyncio.sleep(0.2)
+            em = discord.Embed(title="Sorry,", description="Unfortunately we require you accept the Privacy Policy for Discord Directory at this point in time..", colour=0xFFA658)
+            runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+            for servers in client.servers:
+                if str(servers.id) == '277338839780163585':
+                    await client.kick(member)
+                    for channel in servers.channels:
+                        if str(channel.id) == '359913325024378880':
+                            em = discord.Embed(title='I have kicked {} for declining the Privacy Policy. '.format(member), description=None, colour=0xff0000)
+                            await client.send_message(channel, embed=em)
+                            break
+                        else:
+                            pass
+                    break
+                else:
+                    pass
+            await asyncio.sleep(10)
+        else:
+            try:
+                await client.delete_message(runtime['servers'][str(member.id)]['question'])
+            except:
+                pass
+            await asyncio.sleep(0.2)
+            em = discord.Embed(title="Sorry,", description="Unfortunately we require you accept the Privacy Policy for Discord Directory at this point in time..", colour=0xFFA658)
+            runtime['servers'][str(member.id)]['question'] = await client.send_message(member, embed=em)
+            for servers in client.servers:
+                if str(servers.id) == '277338839780163585':
+                    await client.kick(member)
+                    for channel in servers.channels:
+                        if str(channel.id) == '359913325024378880':
+                            em = discord.Embed(title='I have kicked {} for idling in the Privacy Policy. '.format(member), description=None, colour=0xff0000)
+                            await client.send_message(channel, embed=em)
+                            break
+                        else:
+                            pass
+                    break
+                else:
+                    pass
+            await asyncio.sleep(10)
+            
+    else:
+        pass
+
+
+async def parse(webhook):
+    answer = webhook['items'][0]['answers']
+    # q0 = answer[0]['number']
+    # q1 = answer[1]['choice']['label']
+    # q2 = answer[2]['choice']['label']
+    # q3 = answer[3]['file_url']
+    # q4 = answer[4]['choices']['labels']
+    # q5 = answer[5]['text']
+    # q6 = answer[6]['choice']['label']
+    # q7 = answer[7]['text']
+    # q8 = answer[8]['choice']['label']
+    # q9 = answer[9]['choice']['label']
+    # q10 = answer[10]['url']
+    # q11 = answer[11]['text']
+    # print('guildid: ' +str(guildid))
+    x = 0
+    atmpt = 0
+    n = len(answer)
+    print(n)
+    while x <= n or atmpt >= 5:
+        try:
+            if answer[x]['field']['id'] == '59783291': #server id
+                q0 = answer[x]['number']
+                print('I got the id for ' + str(x) + 'it was q0')
+            elif answer[x]['field']['id'] == '58782927': #server postee's standing in server
+                q1 = answer[x]['choice']['label']
+                print('I got the id for ' + str(x) + 'it was q1')
+            elif answer[x]['field']['id'] == '58903147': #timezone
+                q2 = answer[x]['choice']['label']
+                print('I got the id for ' + str(x) + 'it was q2')
+            elif answer[x]['field']['id'] == '58784388': #server image
+                q3 = answer[x]['file_url']
+                print('I got the id for ' + str(x) + 'it was q3')
+            elif answer[x]['field']['id'] == '58832943': #traits
+                print("Got id for traits")
+                q4 = answer[x]['choices']['labels']
+                print('I got the id for ' + str(x) + 'it was q4')
+            elif answer[x]['field']['id'] == '58782481': #server name
+                q5 = answer[x]['text']
+                print('I got the id for ' + str(x) + 'it was q5')
+            elif answer[x]['field']['id'] == '58902866': #server region
+                q6 = answer[x]['choice']['label']
+                print('I got the id for ' + str(x) + 'it was q6')
+            elif answer[x]['field']['id'] == 'W5sYQOVz4ArJ': #username
+                q7 = answer[x]['text']
+                print('I got the id for ' + str(x) + 'it was q7')
+            elif answer[x]['field']['id'] == '58920986': #population
+                q8 = answer[x]['choice']['label']
+                print('I got the id for ' + str(x) + 'it was q8')
+            elif answer[x]['field']['id'] == 'TlEi7tQgVJPt': #server focus
+                q9 = answer[x]['choice']
+                print('I got the id for ' + str(x) + 'it was q9')
+            elif answer[x]['field']['id'] == '58833092': #invitelink
+                q10 = answer[x]['url']   
+                print('I got the id for ' + str(x) + 'it was q10')
+            elif answer[x]['field']['id'] == '58785244': #description
+                q11 = answer[x]['text']
+                print('I got the id for ' + str(x) + 'it was q11')
+            elif answer[x]['field']['id'] == '59790641': #Social Media
+                q12 = answer[x]['url']
+                print('I got the id for ' + str(x) + 'it was q12')
+            elif answer[x]['field']['id'] == '58783166': #Actual owner
+                q13 = answer[x]['text']
+                print('I got the id for ' + str(x) + 'it was q13')
+            else:
+                print('Something went wrong. Couldnt find an id for ' + answer[x])
+                if int(atmpt) >= 5:
+                    break
+                else:
+                    atmpt += 1
+                    pass
+                print(atmpt)
+        except:
+            # x += 1
+            atmpt += 1
+            pass
+        try:
+            print(answer[x]['field']['id'])
+        except:
+            pass
+        print('x == ' + str(x))
+        print('atmpt == ' + str(atmpt))
+        x += 1
+        
+    time.sleep(5)
+    from pyshorteners import Shortener
+    api_key = DEVELOPER_KEY
+    link = Shortener('Google', api_key=api_key)
+    print("My short url is {}".format(link.short(q10)))
+    print(q4)
+    q9 = str(q9)[11:]
+    lq9 = len(q9)
+    q9 = str(q9)[:lq9-2]
+    print(q9)
+    q10 = link.short(q10)
+    print('url == ' + str(q3))
+    q3r = str(q3)
+    await asyncio.sleep(.5)
+    q3 = link.short(q3)
+    print(str(q3))
+    await asyncio.sleep(0.2)
+    q4r = str(q4)
+    q4 = str(q4)
+    q4 = q4.replace("'", '')
+    q4 = q4.replace("[", '')
+    q4 = q4.replace("]", '')
+    q4 = q4.replace(", ", ' - ')
+    print(str(q4))
+    em = discord.Embed(title='Discord Server Submission', description=None)
+    em.add_field(name="Server ID", value=str(q0), inline=True)
+    em.add_field(name="Postee's Server Standing", value=str(q1), inline=True)
+    try:
+        em.add_field(name="Actual Owner", value=str(q13), inline=True)
+    except:
+        pass
+    em.add_field(name="Server Timezone", value=str(q2), inline=True)
+    em.add_field(name="Server Image", value=str(q3), inline=True)
+    em.add_field(name="Server Traits", value=str(q4), inline=True)
+    em.add_field(name="Server Name", value=str(q5), inline=True)
+    em.add_field(name="Server Region", value=str(q6), inline=True)
+    em.add_field(name="Form Postee's Username", value=str(q7), inline=True)
+    em.add_field(name="Server Population", value=str(q8), inline=True)
+    em.add_field(name="Server Focus", value=str(q9), inline=True)
+    em.add_field(name="Server Invite Link", value=str(q10), inline=True)
+    em.add_field(name="Description", value=str(q11), inline=True)
+    try:
+        em.add_field(name="Social Media", value=str(q12), inline=True)
+    except:
+        pass
+    q3r = str(q3r).replace('/download', ' ')
+    print('q3r == ' + str(q3r))
+    em.set_thumbnail(url=str(q3r))
+    for server in client.servers:
+        if str(server.id) == '277338839780163585':
+            for channel in server.channels:
+                if str(channel.id) == '350816724515422212':
+                    # print(str(q7))
+                    q7 = str(q7).title()
+                    await asyncio.sleep(1)
+                    runtime['servers'][str(server.id)]['serverform'] = await client.send_message(channel, embed=em)
+                    time.sleep(0.01)
+                    await client.add_reaction(runtime['servers'][str(server.id)]['serverform'], '👍')
+                    time.sleep(0.01)
+                    await client.add_reaction(runtime['servers'][str(server.id)]['serverform'], '👎')
+                    await asyncio.sleep(5)
+                    res = await client.wait_for_reaction(['👍', '👎'], message=runtime['servers'][str(server.id)]['serverform'])
+                    print(res)
+                    emoji = '{0.reaction.emoji}'.format(res)
+                    print(emoji)
+                    if emoji == '👍':
+                        await client.delete_message(runtime['servers'][str(server.id)]['serverform'])
+                        time.sleep(1)
+                        runtime['servers'][str(server.id)]['serverform'] = await client.send_message(channel, 'Approved. Moving submission to the {} channel.'.format(str(q9)))
+                        # Where we check what the server is going to be posted into
+                        # ex: if the topic is gaming, 
+                        #if "gaming" in str(q9):
+                        #delete original serverform message, place it into hardcoded channel for gaming topic
+                        
+                        # if "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # elif "" in str(q9):
+                            
+                        # else:
+                        #     await client.send_message(channel, "I was unable to move the submission to {}...".format(str(q9)), tts=True)
+                        
+                        
+                        time.sleep(5)
+                        await client.delete_message(runtime['servers'][str(server.id)]['serverform'])
+                        # await client.delete_message(runtime['servers'][str(member)]['serverformresponce'])
+                        break
+                    elif emoji == '👎':
+                        await client.delete_message(runtime['servers'][str(server.id)]['serverform'])
+                        time.sleep(1)
+                        runtime['servers'][str(server.id)]['serverform'] = await client.send_message(channel, 'Denied, removing from submissions')
+                        time.sleep(5)
+                        await client.delete_message(runtime['servers'][str(server.id)]['serverform'])
+                        break
+                    else:
+                        await client.delete_message(runtime['servers'][str(server.id)]['serverform'])
+                        break
+                    
+                    break
+                else:
+                    pass
+            pass
+        else:
+            pass
+
+def webhooklisten():
+    from flask import Flask, request
+    app = Flask(__name__)
+    @app.route('/', methods=['POST'])
+    def webhook():
+        # print(request)
+        print(request.json)
+        client.loop.create_task(parse(request.json))
+        return 'complete'
+    if __name__ == '__main__':
+        app.run(host='0.0.0.0', port=8000)
+    
+client.run('')
