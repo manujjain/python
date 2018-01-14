@@ -1,0 +1,5 @@
+def customSort(arr):
+	Countfrequency=Counter(arr)
+	sorted_array=sorted(arr,key=Countfrequency.get,reverse=False)
+	for items in sorted_array:
+		print(items)
