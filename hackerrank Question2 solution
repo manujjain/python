@@ -3,3 +3,7 @@ def customSort(arr):
 	sorted_array=sorted(arr,key=Countfrequency.get,reverse=False)
 	for items in sorted_array:
 		print(items)
+
+
+
+if __name__ == "__main__":
