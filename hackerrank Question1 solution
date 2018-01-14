@@ -1,0 +1,32 @@
+#!/bin/python
+
+import sys
+iparens = iter('(){}[]<>')
+parens = dict(zip(iparens, iparens))
+closing = parens.values()
+
+
+
+def isBalanced(s):
+    # Complete this function
+    
+
+    stack = []
+    for c in s:
+        d = parens.get(c, None)
+        if d:
+            stack.append(d)
+        elif c in closing:
+            if not stack or c != stack.pop():
+                return False
+    return not stack
+if __name__ == "__main__":
+    t = int(raw_input().strip())
+    for a0 in xrange(t):
+        s = raw_input().strip()
+        result = isBalanced(s)
+        if result == True:
+            print("YES")
+        else:
+            print("NO")
+
