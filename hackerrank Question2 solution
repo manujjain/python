@@ -1,3 +1,5 @@
+from collections import Counter
+
 def customSort(arr):
 	Countfrequency=Counter(arr)
 	sorted_array=sorted(arr,key=Countfrequency.get,reverse=False)
@@ -7,3 +9,9 @@ def customSort(arr):
 
 
 if __name__ == "__main__":
+	array= [int(x) for x in input().split()]
+	arr=customSort(array)
+	for items in arr:
+	    print(items)
+	
+
